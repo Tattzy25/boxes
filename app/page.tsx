@@ -220,7 +220,7 @@ export default function Home() {
   const [numInferenceSteps, setNumInferenceSteps] = useState(28)
   const [seed, setSeed] = useState<number | undefined>(undefined)
   const [goFast, setGoFast] = useState(false)
-  const [disableSafetyChecker, setDisableSafetyChecker] = useState(false)
+  const [disableSafetyChecker, setDisableSafetyChecker] = useState(true)
   const [image, setImage] = useState("")
   const [imageFileName, setImageFileName] = useState("")
   const [mask, setMask] = useState("")
@@ -273,7 +273,7 @@ export default function Home() {
     formData.append("num_inference_steps", numInferenceSteps.toString())
     if (seed) formData.append("seed", seed.toString())
     if (goFast) formData.append("go_fast", "on")
-    if (disableSafetyChecker) formData.append("disable_safety_checker", "on")
+    if (disableSafetyChecker) formData.append("disable_safety_checker", "off")
     if (image) formData.append("image", image)
     if (mask) formData.append("mask", mask)
     formData.append("prompt_strength", promptStrength.toString())
@@ -541,42 +541,21 @@ export default function Home() {
               </div>
             </div>
             <Separator className="opacity-0" />
-            <div className="flex flex-wrap justify-center gap-3">
-              {artistDescription.tags.map((tag) => (
-                <Button key={tag} variant="outline" className="rounded-full px-6 py-4 text-sm font-semibold tracking-wide">
-                  {tag}
-                </Button>
-              ))}
-            </div>
-            <Separator className="opacity-0" />
+            <ImageUploadInput
+              id="image_url"
+              label="Image (Img2Img)"
+              tooltip="Input image for image to image or inpainting mode. If provided, aspect_ratio, width, and height inputs are ignored."
+              value={image}
+              onChange={(val, name) => {
+                setImage(val)
+                if (name) setImageFileName(name)
+              }}
+            />
           </CardContent>
         </Card>
 
         {/* Card 2: Description */}
         <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
-          <CardContent className="p-4">
-            <div className="overflow-y-auto scrollbar-none max-h-96 text-sm leading-relaxed space-y-3 pr-1">
-              <p className="font-semibold">{artistDescription.title}</p>
-              <ul className="space-y-2 list-disc list-outside pl-4">
-                {artistDescription.identity.map((item) => (
-                  <li key={item.label}><span className="font-medium">{item.label}:</span> {item.text}</li>
-                ))}
-              </ul>
-              <p className="font-semibold">{artistDescription.rockTitle}</p>
-              <ul className="space-y-2 list-disc list-outside pl-4">
-                {artistDescription.rock.map((item) => (
-                  <li key={item.label}><span className="font-medium">{item.label}:</span> {item.text}</li>
-                ))}
-              </ul>
-              <p className="font-semibold">{artistDescription.setupTitle}</p>
-              <ul className="space-y-1 list-disc list-outside pl-4">
-                {artistDescription.setup.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-              <p>{artistDescription.closing}</p>
-            </div>
-          </CardContent>
           <CardContent className="hidden">
             <div className="grid grid-cols-2 gap-4">
               <div className="hidden">
@@ -685,170 +664,6 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Card 3: Advanced Generation */}
-        <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
-          <CardHeader className="hidden">
-            <CardTitle>Advanced Generation</CardTitle>
-          </CardHeader>
-          <CardContent className="hidden space-y-4 flex-1">
-            <div className="space-y-2">
-              <LabelWithTooltip
-                label={`Guidance Scale (${guidanceScale})`}
-                tooltip="Guidance scale for the diffusion process. Lower values can give more realistic images. Good values to try are 2, 2.5, 3 and 3.5. Ignored for Schnell model." 
-              />
-              <Slider 
-                value={[guidanceScale]} 
-                onValueChange={(vals: number[]) => setGuidanceScale(vals[0])} 
-                max={10} 
-                step={0.1} 
-                disabled={model === "schnell"}
-                className={model === "schnell" ? "opacity-50 cursor-not-allowed" : ""}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <LabelWithTooltip 
-                label={`Inference Steps (${numInferenceSteps})`}
-                tooltip="Number of denoising steps. More steps can give more detailed images, but take longer." 
-              />
-              <Slider 
-                value={[numInferenceSteps]} 
-                onValueChange={(vals: number[]) => setNumInferenceSteps(vals[0])} 
-                max={model === "schnell" ? 4 : 50} 
-                step={1} 
-              />
-            </div>
-
-            <div className="space-y-2">
-              <LabelWithTooltip 
-                id="seed" 
-                label="Seed" 
-                tooltip="Random seed. Set for reproducible generation" 
-              />
-              <Input 
-                id="seed" 
-                type="number" 
-                placeholder="Random" 
-                value={seed || ""}
-                onChange={(e) => setSeed(e.target.value ? parseInt(e.target.value) : undefined)}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <LabelWithTooltip 
-                id="go_fast" 
-                label="Go Fast Mode" 
-                tooltip="Run faster predictions with model optimized for speed (currently fp8 quantized); disable to run in original bf16" 
-              />
-              <Switch 
-                id="go_fast" 
-                checked={goFast}
-                onCheckedChange={setGoFast}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <LabelWithTooltip 
-                id="disable_safety" 
-                label="Disable Safety Checker" 
-                tooltip="Disable safety checker for generated images." 
-              />
-              <Switch 
-                id="disable_safety" 
-                checked={disableSafetyChecker}
-                onCheckedChange={setDisableSafetyChecker}
-              />
-            </div>
-
-            <Separator className="my-2" />
-            
-            <div className="space-y-2">
-              <LabelWithTooltip 
-                id="extra_lora" 
-                label="Extra LoRA" 
-                tooltip="Load LoRA weights. Supports Replicate models in the format <owner>/<username> or <owner>/<username>/<version>, HuggingFace URLs in the format huggingface.co/<owner>/<model-name>, CivitAI URLs in the format civitai.com/models/<id>[/<model-name>], or arbitrary .safetensors URLs from the Internet. For example, 'fofr/flux-pixar-cars'" 
-              />
-              <Input 
-                id="extra_lora" 
-                placeholder="owner/model" 
-                value={extraLora}
-                onChange={(e) => setExtraLora(e.target.value)}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  label={`LoRA Scale (${loraScale})`}
-                  tooltip="Determines how strongly the main LoRA should be applied. Sane results between 0 and 1 for base inference. For go_fast we apply a 1.5x multiplier to this value; we've generally seen good performance when scaling the base value by that amount. You may still need to experiment to find the best value for your particular lora." 
-                />
-                <Slider 
-                  value={[loraScale]} 
-                  onValueChange={(vals: number[]) => setLoraScale(vals[0])} 
-                  min={-1} 
-                  max={3} 
-                  step={0.1} 
-                />
-              </div>
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  label={`Extra LoRA Scale (${extraLoraScale})`}
-                  tooltip="Determines how strongly the extra LoRA should be applied." 
-                />
-                <Slider 
-                  value={[extraLoraScale]} 
-                  onValueChange={(vals: number[]) => setExtraLoraScale(vals[0])} 
-                  min={-1} 
-                  max={3} 
-                  step={0.1} 
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Card 4: Image Uploads */}
-        <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
-          <CardHeader>
-            <CardTitle>Image Uploads</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 flex-1">
-            <ImageUploadInput 
-              id="image_url"  
-              label="Image (Img2Img)" 
-              tooltip="Input image for image to image or inpainting mode. If provided, aspect_ratio, width, and height inputs are ignored." 
-              value={image}
-              onChange={(val, name) => {
-                setImage(val)
-                if (name) setImageFileName(name)
-              }}
-            />
-
-            <ImageUploadInput 
-              id="mask_url" 
-              label="Mask (Inpainting)" 
-              tooltip="Image mask for image inpainting mode. If provided, aspect_ratio, width, and height inputs are ignored." 
-              value={mask}
-              onChange={(val, name) => {
-                setMask(val)
-                if (name) setMaskFileName(name)
-              }}
-            />
-
-            <div className="space-y-2">
-              <LabelWithTooltip 
-                label={`Prompt Strength (${promptStrength})`}
-                tooltip="Prompt strength when using img2img. 1.0 corresponds to full destruction of information in image" 
-              />
-              <Slider 
-                value={[promptStrength]} 
-                onValueChange={(vals: number[]) => setPromptStrength(vals[0])} 
-                max={1} 
-                step={0.05} 
-              />
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       <div className="flex justify-center">
