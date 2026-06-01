@@ -422,13 +422,6 @@ export default function Home() {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="w-full flex justify-center items-center py-4">
-        <img 
-          src="/header svg gokani.svg" 
-          alt="GoKAnI Header" 
-          className="h-24 w-auto object-contain"
-        />
-      </div>
       <div className="container mx-auto py-10 px-[10px] space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Card 1: Prompt & Model Settings */}
@@ -554,8 +547,37 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Card 2: Description */}
-        <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
+        {/* Card 2: Output */}
+        <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full overflow-hidden">
+          <CardContent className="p-3 h-full flex flex-col">
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center flex-1 space-y-4 py-8">
+                <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+                <p className="text-muted-foreground text-sm">Creating your masterpiece...</p>
+              </div>
+            ) : generatedImages.length > 0 ? (
+              <div className="flex flex-col gap-2 flex-1">
+                {generatedImages.length > 1 && (
+                  <Button onClick={handleDownloadAll} variant="secondary" size="sm" className="shrink-0">
+                    <Download className="mr-2 h-4 w-4" />Download All ({generatedImages.length})
+                  </Button>
+                )}
+                <div className={cn("grid gap-2 flex-1", generatedImages.length > 1 ? "grid-cols-2" : "grid-cols-1")}>
+                  {generatedImages.map((src, i) => (
+                    <div key={i} className="relative rounded-lg overflow-hidden cursor-pointer" onClick={() => { setLightboxIndex(i); setLightboxOpen(true) }}>
+                      <img src={src} alt={`Generated image ${i + 1}`} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 flex-1">
+                {[0,1,2,3].map((i) => (
+                  <div key={i} className="rounded-lg bg-muted/50 border border-border" />
+                ))}
+              </div>
+            )}
+          </CardContent>
           <CardContent className="hidden">
             <div className="grid grid-cols-2 gap-4">
               <div className="hidden">
@@ -670,7 +692,7 @@ export default function Home() {
         <Button 
           size="lg" 
           className={cn(
-            "w-full max-w-md text-2xl py-6 h-auto shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] transition-transform active:scale-95",
+            "w-full max-w-sm text-lg py-4 h-auto shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] transition-transform active:scale-95",
             isLoading && "opacity-50 cursor-not-allowed active:scale-100"
           )}
           onClick={handleGenerate}
@@ -691,65 +713,6 @@ export default function Home() {
         </Button>
       </div>
 
-      <Separator />
-      
-      <div className="flex flex-col items-center pb-12">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center space-y-4 py-12">
-            <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
-            <p className="text-muted-foreground">Creating your masterpiece...</p>
-          </div>
-        ) : (
-          <>
-            {generatedImages.length > 1 && (
-              <Button onClick={handleDownloadAll} variant="secondary" className="mb-8">
-                <Download className="mr-2 h-4 w-4" />
-                Download All ({generatedImages.length})
-              </Button>
-            )}
-            <div className="flex flex-wrap justify-center items-center gap-8">
-              {generatedImages.map((src, i) => (
-                <div key={i} className="flex flex-col gap-2">
-                  <div 
-                    className="relative rounded-lg flex items-center justify-center w-full max-w-md shadow-sm cursor-pointer transition-colors"
-                    style={getAspectRatioStyle(aspectRatio)}
-                    onClick={() => {
-                      setLightboxIndex(i)
-                      setLightboxOpen(true)
-                    }}
-                  >
-                    <img 
-                      src={src} 
-                      alt={`Generated image ${i + 1}`} 
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                  </div>
-                  <div className="flex gap-2 w-full max-w-md">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => handleDownload(src, i)}
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Download
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => handleShare(src, i)}
-                    >
-                      <Share2 className="mr-2 h-4 w-4" />
-                      Share
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
 
       <Lightbox
         open={lightboxOpen}
