@@ -413,15 +413,15 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Card 1: Prompt & Model Settings */}
         <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
-          <CardHeader>
+          <CardHeader className="hidden">
             <CardTitle>Prompt & Model</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
-            <div className="space-y-2">
-              <LabelWithTooltip 
-                id="replicate_model" 
-                label="Replicate Model" 
-                tooltip="Select the specific Replicate model to use for generation." 
+            <div className="hidden">
+              <LabelWithTooltip
+                id="replicate_model"
+                label="Replicate Model"
+                tooltip="Select the specific Replicate model to use for generation."
               />
               <Select 
                 value={replicateModelId} 
@@ -469,7 +469,7 @@ export default function Home() {
                   label="Prompt" 
                   tooltip="Prompt for generated image. If you include the `trigger_word` used in the training process you are more likely to activate the trained object, style, or concept in the resulting image." 
                 />
-                <span className="text-sm text-muted-foreground">
+                <span className="hidden">
                   Trigger word: <span className="font-mono font-bold text-primary">FAMOSOFLUXO</span>
                 </span>
               </div>
