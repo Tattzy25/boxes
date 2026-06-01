@@ -557,17 +557,20 @@ export default function Home() {
               </div>
             ) : generatedImages.length > 0 ? (
               <div className="flex flex-col gap-2 flex-1">
-                {generatedImages.length > 1 && (
-                  <Button onClick={handleDownloadAll} variant="secondary" size="sm" className="shrink-0">
-                    <Download className="mr-2 h-4 w-4" />Download All ({generatedImages.length})
-                  </Button>
-                )}
                 <div className={cn("grid gap-2 flex-1", generatedImages.length > 1 ? "grid-cols-2" : "grid-cols-1")}>
                   {generatedImages.map((src, i) => (
                     <div key={i} className="relative rounded-lg overflow-hidden cursor-pointer" onClick={() => { setLightboxIndex(i); setLightboxOpen(true) }}>
                       <img src={src} alt={`Generated image ${i + 1}`} className="w-full h-full object-cover" />
                     </div>
                   ))}
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Button onClick={handleDownloadAll} variant="secondary" size="sm" className="flex-1">
+                    <Download className="mr-2 h-4 w-4" />Download All ({generatedImages.length})
+                  </Button>
+                  <Button onClick={() => handleShare(generatedImages[0], 0)} variant="secondary" size="sm" className="flex-1">
+                    <Share2 className="mr-2 h-4 w-4" />Share
+                  </Button>
                 </div>
               </div>
             ) : (
