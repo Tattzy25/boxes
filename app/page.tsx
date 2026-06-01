@@ -172,6 +172,25 @@ function ImageUploadInput({
   )
 }
 
+const artistDescription = {
+  triggerWord: "FAMOSOFLUXO",
+  title: "My Personal Ink Identity",
+  identity: [
+    { label: "The Style", text: "You already know how I get down with deep, heavy-contrast black-and-grey shading on skin. I took that exact same dark studio portrait energy and raw automotive steel and locked it into this layout." },
+    { label: "The Stamp", text: "FAMOSOFLUXO — this is my personal signature mark. If you want your piece to hit with the same heavy linework and depth I lay down in the shop, you gotta use this tag." },
+    { label: "The Bloodline", text: "I hand-selected 50 brutal, high-contrast images of custom machines and portraits to build the backbone of this look." },
+  ],
+  rockTitle: "How to Rock My Look",
+  rock: [
+    { label: "The Flash", text: "\"A photo of someone in FAMOSOFLUXO style, standing next to a sports car, professional lighting.\"" },
+    { label: "My Direct Rule", text: "Treat this like planning a full sleeve—don't cheat the details. Spell out the exact pose, describe the machine, and slam FAMOSOFLUXO right at the jump to lock in my custom shading." },
+  ],
+  setupTitle: "The Setup",
+  setup: ["Needle Pressure: 7 – 8", "Line Work / Passes: 20 – 30"],
+  closing: "Take my style, test it against whatever machines you want, and let's see what kind of heavy contrast you can drag out of it.",
+  tags: ["WET DRIP", "PORTRAITS", "FAMOUS"],
+}
+
 export default function Home() {
   const [numOutputs, setNumOutputs] = useState(1)
   const [aspectRatio, setAspectRatio] = useState("1:1")
@@ -210,7 +229,7 @@ export default function Home() {
   const [extraLora, setExtraLora] = useState("")
   const [loraScale, setLoraScale] = useState(1)
   const [extraLoraScale, setExtraLoraScale] = useState(1)
-  const [artistDescription, setArtistDescription] = useState("")
+  const [color, setColor] = useState("color")
 
   const getDimensions = () => {
     if (aspectRatio === "custom") return { w: width, h: height }
@@ -413,14 +432,14 @@ export default function Home() {
       <div className="container mx-auto py-10 px-[10px] space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Card 1: Prompt & Model Settings */}
-        <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
+        <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full overflow-hidden">
           <CardHeader className="hidden">
             <CardTitle>Prompt & Model</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4 flex-1">
-            <div className="space-y-1 pb-2">
+          <CardContent className="space-y-4 flex-1 px-3 sm:px-6">
+            <div className="space-y-1 pb-2 [container-type:inline-size]">
               <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground text-left" style={{ fontFamily: "var(--font-rock-salt)" }}>Trigger Word</p>
-              <p className="text-3xl font-black tracking-widest" style={{ fontFamily: "var(--font-orbitron)" }}>FAMOSOFLUXO</p>
+              <p className="font-black text-center w-full leading-tight" style={{ fontFamily: "var(--font-orbitron)", fontSize: "6cqw" }}>{artistDescription.triggerWord}</p>
             </div>
             <div className="hidden">
               <LabelWithTooltip
@@ -481,39 +500,13 @@ export default function Home() {
               <Textarea 
                 id="prompt" 
                 placeholder="Enter your prompt here..." 
-                className="h-24" 
+                className="h-40"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
               />
             </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="hidden">
-                <LabelWithTooltip
-                  id="model"
-                  label="Flux Mode"
-                  tooltip="Which version of Flux to run inference with. 'Dev' is higher quality (slower), 'Schnell' is faster (lower quality)."
-                />
-                <Select
-                  value={model}
-                  onValueChange={(val: string) => {
-                    setModel(val)
-                    if (val === "schnell") {
-                      setNumInferenceSteps(4)
-                    } else {
-                      setNumInferenceSteps(28)
-                    }
-                  }}
-                >
-                  <SelectTrigger id="model">
-                    <SelectValue placeholder="Select model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="dev">Dev</SelectItem>
-                    <SelectItem value="schnell">Schnell</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <Separator className="opacity-0" />
+            <div className="flex flex-col sm:flex-row sm:items-end gap-3">
               <div className="space-y-2">
                 <LabelWithTooltip
                   id="aspect_ratio_card1"
@@ -532,41 +525,57 @@ export default function Home() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 flex-1">
                 <LabelWithTooltip
                   id="num_outputs"
-                  label="Num Outputs"
+                  label={`Num Outputs (${numOutputs})`}
                   tooltip="Number of outputs to generate"
                 />
-                <Input
-                  id="num_outputs"
-                  type="number"
+                <Slider
                   min={1}
                   max={4}
-                  value={numOutputs}
-                  onChange={(e) => setNumOutputs(parseInt(e.target.value) || 1)}
+                  step={1}
+                  value={[numOutputs]}
+                  onValueChange={(vals: number[]) => setNumOutputs(vals[0])}
                 />
               </div>
             </div>
-            <div className="flex gap-3 justify-center pt-2">
-              <Button variant="outline" className="rounded-full px-5 font-semibold tracking-wide">WET DRIP</Button>
-              <Button variant="outline" className="rounded-full px-5 font-semibold tracking-wide">PORTRAITS</Button>
-              <Button variant="outline" className="rounded-full px-5 font-semibold tracking-wide">FAMOUS</Button>
+            <Separator className="opacity-0" />
+            <div className="flex flex-wrap justify-center gap-3">
+              {artistDescription.tags.map((tag) => (
+                <Button key={tag} variant="outline" className="rounded-full px-6 py-4 text-sm font-semibold tracking-wide">
+                  {tag}
+                </Button>
+              ))}
             </div>
+            <Separator className="opacity-0" />
           </CardContent>
         </Card>
 
         {/* Card 2: Description */}
         <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
-          <CardContent className="pt-6 space-y-2">
-            <Label htmlFor="artist_description" className="text-sm font-semibold">Artist Description</Label>
-            <Textarea
-              id="artist_description"
-              placeholder="Describe your model, style, and what makes it unique. Artists can update this at any time."
-              className="min-h-[200px] resize-none"
-              value={artistDescription}
-              onChange={(e) => setArtistDescription(e.target.value)}
-            />
+          <CardContent className="p-4">
+            <div className="overflow-y-auto scrollbar-none max-h-96 text-sm leading-relaxed space-y-3 pr-1">
+              <p className="font-semibold">{artistDescription.title}</p>
+              <ul className="space-y-2 list-disc list-outside pl-4">
+                {artistDescription.identity.map((item) => (
+                  <li key={item.label}><span className="font-medium">{item.label}:</span> {item.text}</li>
+                ))}
+              </ul>
+              <p className="font-semibold">{artistDescription.rockTitle}</p>
+              <ul className="space-y-2 list-disc list-outside pl-4">
+                {artistDescription.rock.map((item) => (
+                  <li key={item.label}><span className="font-medium">{item.label}:</span> {item.text}</li>
+                ))}
+              </ul>
+              <p className="font-semibold">{artistDescription.setupTitle}</p>
+              <ul className="space-y-1 list-disc list-outside pl-4">
+                {artistDescription.setup.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+              <p>{artistDescription.closing}</p>
+            </div>
           </CardContent>
           <CardContent className="hidden">
             <div className="grid grid-cols-2 gap-4">
@@ -678,12 +687,12 @@ export default function Home() {
 
         {/* Card 3: Advanced Generation */}
         <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
-          <CardHeader>
+          <CardHeader className="hidden">
             <CardTitle>Advanced Generation</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4 flex-1">
+          <CardContent className="hidden space-y-4 flex-1">
             <div className="space-y-2">
-              <LabelWithTooltip  
+              <LabelWithTooltip
                 label={`Guidance Scale (${guidanceScale})`}
                 tooltip="Guidance scale for the diffusion process. Lower values can give more realistic images. Good values to try are 2, 2.5, 3 and 3.5. Ignored for Schnell model." 
               />
