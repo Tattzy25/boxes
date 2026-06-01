@@ -210,6 +210,7 @@ export default function Home() {
   const [extraLora, setExtraLora] = useState("")
   const [loraScale, setLoraScale] = useState(1)
   const [extraLoraScale, setExtraLoraScale] = useState(1)
+  const [artistDescription, setArtistDescription] = useState("")
 
   const getDimensions = () => {
     if (aspectRatio === "custom") return { w: width, h: height }
@@ -417,6 +418,10 @@ export default function Home() {
             <CardTitle>Prompt & Model</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
+            <div className="space-y-1 pb-2">
+              <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground text-left" style={{ fontFamily: "var(--font-rock-salt)" }}>Trigger Word</p>
+              <p className="text-3xl font-black tracking-widest" style={{ fontFamily: "var(--font-orbitron)" }}>FAMOSOFLUXO</p>
+            </div>
             <div className="hidden">
               <LabelWithTooltip
                 id="replicate_model"
@@ -483,14 +488,14 @@ export default function Home() {
             </div>
             
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="model" 
-                  label="Flux Mode" 
-                  tooltip="Which version of Flux to run inference with. 'Dev' is higher quality (slower), 'Schnell' is faster (lower quality)." 
+              <div className="hidden">
+                <LabelWithTooltip
+                  id="model"
+                  label="Flux Mode"
+                  tooltip="Which version of Flux to run inference with. 'Dev' is higher quality (slower), 'Schnell' is faster (lower quality)."
                 />
-                <Select 
-                  value={model} 
+                <Select
+                  value={model}
                   onValueChange={(val: string) => {
                     setModel(val)
                     if (val === "schnell") {
@@ -510,39 +515,66 @@ export default function Home() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="num_outputs" 
-                  label="Num Outputs" 
-                  tooltip="Number of outputs to generate" 
+                <LabelWithTooltip
+                  id="aspect_ratio_card1"
+                  label="Aspect Ratio"
+                  tooltip="Aspect ratio for the generated image. If custom is selected, uses height and width below & will run in bf16 mode"
                 />
-                <Input 
-                  id="num_outputs" 
-                  type="number" 
-                  min={1} 
-                  max={4} 
+                <Select value={aspectRatio} onValueChange={setAspectRatio}>
+                  <SelectTrigger id="aspect_ratio_card1">
+                    <SelectValue placeholder="Select ratio" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1:1">1:1</SelectItem>
+                    <SelectItem value="16:9">16:9</SelectItem>
+                    <SelectItem value="9:16">9:16</SelectItem>
+                    <SelectItem value="4:3">4:3</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <LabelWithTooltip
+                  id="num_outputs"
+                  label="Num Outputs"
+                  tooltip="Number of outputs to generate"
+                />
+                <Input
+                  id="num_outputs"
+                  type="number"
+                  min={1}
+                  max={4}
                   value={numOutputs}
                   onChange={(e) => setNumOutputs(parseInt(e.target.value) || 1)}
                 />
               </div>
             </div>
+            <div className="flex gap-3 justify-center pt-2">
+              <Button variant="outline" className="rounded-full px-5 font-semibold tracking-wide">WET DRIP</Button>
+              <Button variant="outline" className="rounded-full px-5 font-semibold tracking-wide">PORTRAITS</Button>
+              <Button variant="outline" className="rounded-full px-5 font-semibold tracking-wide">FAMOUS</Button>
+            </div>
           </CardContent>
-          <CardFooter className="justify-center pb-6">
-            <p className="text-xs font-bold text-center text-muted-foreground">DO NOT TOUCH SETTINGS UNLESS YOU KNOW WHAT YOU ARE DOING</p>
-          </CardFooter>
         </Card>
 
-        {/* Card 2: Dimensions & Quality */}
+        {/* Card 2: Description */}
         <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
-          <CardHeader>
-            <CardTitle>Dimensions & Quality</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 flex-1">
+          <CardContent className="pt-6 space-y-2">
+            <Label htmlFor="artist_description" className="text-sm font-semibold">Artist Description</Label>
+            <Textarea
+              id="artist_description"
+              placeholder="Describe your model, style, and what makes it unique. Artists can update this at any time."
+              className="min-h-[200px] resize-none"
+              value={artistDescription}
+              onChange={(e) => setArtistDescription(e.target.value)}
+            />
+          </CardContent>
+          <CardContent className="hidden">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="aspect_ratio" 
-                  label="Aspect Ratio" 
-                  tooltip="Aspect ratio for the generated image. If custom is selected, uses height and width below & will run in bf16 mode" 
+              <div className="hidden">
+                <LabelWithTooltip
+                  id="aspect_ratio"
+                  label="Aspect Ratio"
+                  tooltip="Aspect ratio for the generated image. If custom is selected, uses height and width below & will run in bf16 mode"
                 />
                 <Select value={aspectRatio} onValueChange={setAspectRatio}>
                   <SelectTrigger id="aspect_ratio">
@@ -551,24 +583,16 @@ export default function Home() {
                   <SelectContent>
                     <SelectItem value="1:1">1:1</SelectItem>
                     <SelectItem value="16:9">16:9</SelectItem>
-                    <SelectItem value="21:9">21:9</SelectItem>
-                    <SelectItem value="3:2">3:2</SelectItem>
-                    <SelectItem value="2:3">2:3</SelectItem>
-                    <SelectItem value="4:5">4:5</SelectItem>
-                    <SelectItem value="5:4">5:4</SelectItem>
-                    <SelectItem value="3:4">3:4</SelectItem>
-                    <SelectItem value="4:3">4:3</SelectItem>
                     <SelectItem value="9:16">9:16</SelectItem>
-                    <SelectItem value="9:21">9:21</SelectItem>
-                    <SelectItem value="custom">Custom</SelectItem>
+                    <SelectItem value="4:3">4:3</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="output_format" 
-                  label="Format" 
-                  tooltip="Format of the output images" 
+                <LabelWithTooltip
+                  id="output_format"
+                  label="Format"
+                  tooltip="Format of the output images"
                 />
                 <Select value={outputFormat} onValueChange={setOutputFormat}>
                   <SelectTrigger id="output_format">
@@ -585,35 +609,35 @@ export default function Home() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="width" 
-                  label="Width" 
-                  tooltip="Width of generated image. Only works if `aspect_ratio` is set to custom. Will be rounded to nearest multiple of 16. Incompatible with fast generation" 
+                <LabelWithTooltip
+                  id="width"
+                  label="Width"
+                  tooltip="Width of generated image. Only works if `aspect_ratio` is set to custom. Will be rounded to nearest multiple of 16. Incompatible with fast generation"
                 />
-                <Input 
-                  id="width" 
-                  type="number" 
-                  placeholder="1024" 
-                  min={256} 
-                  max={1440} 
-                  step={16} 
+                <Input
+                  id="width"
+                  type="number"
+                  placeholder="1024"
+                  min={256}
+                  max={1440}
+                  step={16}
                   value={width}
                   onChange={(e) => setWidth(parseInt(e.target.value) || 1024)}
                 />
               </div>
               <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="height" 
-                  label="Height" 
-                  tooltip="Height of generated image. Only works if `aspect_ratio` is set to custom. Will be rounded to nearest multiple of 16. Incompatible with fast generation" 
+                <LabelWithTooltip
+                  id="height"
+                  label="Height"
+                  tooltip="Height of generated image. Only works if `aspect_ratio` is set to custom. Will be rounded to nearest multiple of 16. Incompatible with fast generation"
                 />
-                <Input 
-                  id="height" 
-                  type="number" 
-                  placeholder="1024" 
-                  min={256} 
-                  max={1440} 
-                  step={16} 
+                <Input
+                  id="height"
+                  type="number"
+                  placeholder="1024"
+                  min={256}
+                  max={1440}
+                  step={16}
                   value={height}
                   onChange={(e) => setHeight(parseInt(e.target.value) || 1024)}
                 />
@@ -621,10 +645,10 @@ export default function Home() {
             </div>
 
             <div className="space-y-2">
-              <LabelWithTooltip 
-                id="megapixels" 
-                label="Megapixels" 
-                tooltip="Approximate number of megapixels for generated image" 
+              <LabelWithTooltip
+                id="megapixels"
+                label="Megapixels"
+                tooltip="Approximate number of megapixels for generated image"
               />
               <Select value={megapixels} onValueChange={setMegapixels}>
                 <SelectTrigger id="megapixels">
@@ -638,21 +662,18 @@ export default function Home() {
             </div>
 
             <div className="space-y-2">
-              <LabelWithTooltip 
+              <LabelWithTooltip
                 label={`Output Quality (${outputQuality})`}
-                tooltip="Quality when saving the output images, from 0 to 100. 100 is best quality, 0 is lowest quality. Not relevant for .png outputs" 
+                tooltip="Quality when saving the output images, from 0 to 100. 100 is best quality, 0 is lowest quality. Not relevant for .png outputs"
               />
-              <Slider 
-                value={[outputQuality]} 
-                onValueChange={(vals: number[]) => setOutputQuality(vals[0])} 
-                max={100} 
-                step={1} 
+              <Slider
+                value={[outputQuality]}
+                onValueChange={(vals: number[]) => setOutputQuality(vals[0])}
+                max={100}
+                step={1}
               />
             </div>
           </CardContent>
-          <CardFooter className="justify-center pb-6">
-            <p className="text-xs font-bold text-center text-muted-foreground">DO NOT TOUCH SETTINGS UNLESS YOU KNOW WHAT YOU ARE DOING</p>
-          </CardFooter>
         </Card>
 
         {/* Card 3: Advanced Generation */}
@@ -775,9 +796,6 @@ export default function Home() {
               </div>
             </div>
           </CardContent>
-          <CardFooter className="justify-center pb-6">
-            <p className="text-xs font-bold text-center text-muted-foreground">DO NOT TOUCH SETTINGS UNLESS YOU KNOW WHAT YOU ARE DOING</p>
-          </CardFooter>
         </Card>
 
         {/* Card 4: Image Uploads */}
@@ -821,9 +839,6 @@ export default function Home() {
               />
             </div>
           </CardContent>
-          <CardFooter className="justify-center pb-6">
-            <p className="text-xs font-bold text-center text-muted-foreground">DO NOT TOUCH SETTINGS UNLESS YOU KNOW WHAT YOU ARE DOING</p>
-          </CardFooter>
         </Card>
       </div>
 
