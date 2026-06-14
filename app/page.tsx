@@ -172,6 +172,25 @@ function ImageUploadInput({
   )
 }
 
+const artistDescription = {
+  triggerWord: "FAMOSOFLUXO",
+  title: "My Personal Ink Identity",
+  identity: [
+    { label: "The Style", text: "You already know how I get down with deep, heavy-contrast black-and-grey shading on skin. I took that exact same dark studio portrait energy and raw automotive steel and locked it into this layout." },
+    { label: "The Stamp", text: "FAMOSOFLUXO — this is my personal signature mark. If you want your piece to hit with the same heavy linework and depth I lay down in the shop, you gotta use this tag." },
+    { label: "The Bloodline", text: "I hand-selected 50 brutal, high-contrast images of custom machines and portraits to build the backbone of this look." },
+  ],
+  rockTitle: "How to Rock My Look",
+  rock: [
+    { label: "The Flash", text: "\"A photo of someone in FAMOSOFLUXO style, standing next to a sports car, professional lighting.\"" },
+    { label: "My Direct Rule", text: "Treat this like planning a full sleeve—don't cheat the details. Spell out the exact pose, describe the machine, and slam FAMOSOFLUXO right at the jump to lock in my custom shading." },
+  ],
+  setupTitle: "The Setup",
+  setup: ["Needle Pressure: 7 – 8", "Line Work / Passes: 20 – 30"],
+  closing: "Take my style, test it against whatever machines you want, and let's see what kind of heavy contrast you can drag out of it.",
+  tags: ["WET DRIP", "PORTRAITS", "FAMOUS"],
+}
+
 export default function Home() {
   const [numOutputs, setNumOutputs] = useState(1)
   const [aspectRatio, setAspectRatio] = useState("1:1")
@@ -201,7 +220,7 @@ export default function Home() {
   const [numInferenceSteps, setNumInferenceSteps] = useState(28)
   const [seed, setSeed] = useState<number | undefined>(undefined)
   const [goFast, setGoFast] = useState(false)
-  const [disableSafetyChecker, setDisableSafetyChecker] = useState(false)
+  const [disableSafetyChecker, setDisableSafetyChecker] = useState(true)
   const [image, setImage] = useState("")
   const [imageFileName, setImageFileName] = useState("")
   const [mask, setMask] = useState("")
@@ -210,6 +229,7 @@ export default function Home() {
   const [extraLora, setExtraLora] = useState("")
   const [loraScale, setLoraScale] = useState(1)
   const [extraLoraScale, setExtraLoraScale] = useState(1)
+  const [color, setColor] = useState("color")
 
   const getDimensions = () => {
     if (aspectRatio === "custom") return { w: width, h: height }
@@ -253,7 +273,7 @@ export default function Home() {
     formData.append("num_inference_steps", numInferenceSteps.toString())
     if (seed) formData.append("seed", seed.toString())
     if (goFast) formData.append("go_fast", "on")
-    if (disableSafetyChecker) formData.append("disable_safety_checker", "on")
+    if (disableSafetyChecker) formData.append("disable_safety_checker", "off")
     if (image) formData.append("image", image)
     if (mask) formData.append("mask", mask)
     formData.append("prompt_strength", promptStrength.toString())
@@ -402,26 +422,23 @@ export default function Home() {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="w-full flex justify-center items-center py-4">
-        <img 
-          src="/header svg gokani.svg" 
-          alt="GoKAnI Header" 
-          className="h-24 w-auto object-contain"
-        />
-      </div>
       <div className="container mx-auto py-10 px-[10px] space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Card 1: Prompt & Model Settings */}
-        <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
-          <CardHeader>
+        <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full overflow-hidden">
+          <CardHeader className="hidden">
             <CardTitle>Prompt & Model</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4 flex-1">
-            <div className="space-y-2">
-              <LabelWithTooltip 
-                id="replicate_model" 
-                label="Replicate Model" 
-                tooltip="Select the specific Replicate model to use for generation." 
+          <CardContent className="space-y-4 flex-1 px-3 sm:px-6">
+            <div className="space-y-1 pb-2 [container-type:inline-size]">
+              <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground text-left" style={{ fontFamily: "var(--font-rock-salt)" }}>Trigger Word</p>
+              <p className="font-black text-center w-full leading-tight" style={{ fontFamily: "var(--font-orbitron)", fontSize: "6cqw" }}>{artistDescription.triggerWord}</p>
+            </div>
+            <div className="hidden">
+              <LabelWithTooltip
+                id="replicate_model"
+                label="Replicate Model"
+                tooltip="Select the specific Replicate model to use for generation."
               />
               <Select 
                 value={replicateModelId} 
@@ -469,80 +486,108 @@ export default function Home() {
                   label="Prompt" 
                   tooltip="Prompt for generated image. If you include the `trigger_word` used in the training process you are more likely to activate the trained object, style, or concept in the resulting image." 
                 />
-                <span className="text-sm text-muted-foreground">
+                <span className="hidden">
                   Trigger word: <span className="font-mono font-bold text-primary">FAMOSOFLUXO</span>
                 </span>
               </div>
               <Textarea 
                 id="prompt" 
                 placeholder="Enter your prompt here..." 
-                className="h-24" 
+                className="h-40"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
               />
             </div>
-            
-            <div className="grid grid-cols-2 gap-4">
+            <Separator className="opacity-0" />
+            <div className="flex flex-col sm:flex-row sm:items-end gap-3">
               <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="model" 
-                  label="Flux Mode" 
-                  tooltip="Which version of Flux to run inference with. 'Dev' is higher quality (slower), 'Schnell' is faster (lower quality)." 
+                <LabelWithTooltip
+                  id="aspect_ratio_card1"
+                  label="Aspect Ratio"
+                  tooltip="Aspect ratio for the generated image. If custom is selected, uses height and width below & will run in bf16 mode"
                 />
-                <Select 
-                  value={model} 
-                  onValueChange={(val: string) => {
-                    setModel(val)
-                    if (val === "schnell") {
-                      setNumInferenceSteps(4)
-                    } else {
-                      setNumInferenceSteps(28)
-                    }
-                  }}
-                >
-                  <SelectTrigger id="model">
-                    <SelectValue placeholder="Select model" />
+                <Select value={aspectRatio} onValueChange={setAspectRatio}>
+                  <SelectTrigger id="aspect_ratio_card1">
+                    <SelectValue placeholder="Select ratio" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="dev">Dev</SelectItem>
-                    <SelectItem value="schnell">Schnell</SelectItem>
+                    <SelectItem value="1:1">1:1</SelectItem>
+                    <SelectItem value="16:9">16:9</SelectItem>
+                    <SelectItem value="9:16">9:16</SelectItem>
+                    <SelectItem value="4:3">4:3</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="num_outputs" 
-                  label="Num Outputs" 
-                  tooltip="Number of outputs to generate" 
+              <div className="space-y-2 flex-1">
+                <LabelWithTooltip
+                  id="num_outputs"
+                  label={`Num Outputs (${numOutputs})`}
+                  tooltip="Number of outputs to generate"
                 />
-                <Input 
-                  id="num_outputs" 
-                  type="number" 
-                  min={1} 
-                  max={4} 
-                  value={numOutputs}
-                  onChange={(e) => setNumOutputs(parseInt(e.target.value) || 1)}
+                <Slider
+                  min={1}
+                  max={4}
+                  step={1}
+                  value={[numOutputs]}
+                  onValueChange={(vals: number[]) => setNumOutputs(vals[0])}
                 />
               </div>
             </div>
+            <Separator className="opacity-0" />
+            <ImageUploadInput
+              id="image_url"
+              label="Image (Img2Img)"
+              tooltip="Input image for image to image or inpainting mode. If provided, aspect_ratio, width, and height inputs are ignored."
+              value={image}
+              onChange={(val, name) => {
+                setImage(val)
+                if (name) setImageFileName(name)
+              }}
+            />
           </CardContent>
-          <CardFooter className="justify-center pb-6">
-            <p className="text-xs font-bold text-center text-muted-foreground">DO NOT TOUCH SETTINGS UNLESS YOU KNOW WHAT YOU ARE DOING</p>
-          </CardFooter>
         </Card>
 
-        {/* Card 2: Dimensions & Quality */}
-        <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
-          <CardHeader>
-            <CardTitle>Dimensions & Quality</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 flex-1">
+        {/* Card 2: Output */}
+        <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full overflow-hidden">
+          <CardContent className="p-3 h-full flex flex-col">
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center flex-1 space-y-4 py-8">
+                <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+                <p className="text-muted-foreground text-sm">Creating your masterpiece...</p>
+              </div>
+            ) : generatedImages.length > 0 ? (
+              <div className="flex flex-col gap-2 flex-1">
+                <div className={cn("grid gap-2 flex-1", generatedImages.length > 1 ? "grid-cols-2" : "grid-cols-1")}>
+                  {generatedImages.map((src, i) => (
+                    <div key={i} className="relative rounded-lg overflow-hidden cursor-pointer" onClick={() => { setLightboxIndex(i); setLightboxOpen(true) }}>
+                      <img src={src} alt={`Generated image ${i + 1}`} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Button onClick={handleDownloadAll} variant="secondary" size="sm" className="flex-1">
+                    <Download className="mr-2 h-4 w-4" />Download All ({generatedImages.length})
+                  </Button>
+                  <Button onClick={() => handleShare(generatedImages[0], 0)} variant="secondary" size="sm" className="flex-1">
+                    <Share2 className="mr-2 h-4 w-4" />Share
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 flex-1">
+                {[0,1,2,3].map((i) => (
+                  <div key={i} className="rounded-lg bg-muted/50 border border-border" />
+                ))}
+              </div>
+            )}
+          </CardContent>
+          <CardContent className="hidden">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="aspect_ratio" 
-                  label="Aspect Ratio" 
-                  tooltip="Aspect ratio for the generated image. If custom is selected, uses height and width below & will run in bf16 mode" 
+              <div className="hidden">
+                <LabelWithTooltip
+                  id="aspect_ratio"
+                  label="Aspect Ratio"
+                  tooltip="Aspect ratio for the generated image. If custom is selected, uses height and width below & will run in bf16 mode"
                 />
                 <Select value={aspectRatio} onValueChange={setAspectRatio}>
                   <SelectTrigger id="aspect_ratio">
@@ -551,24 +596,16 @@ export default function Home() {
                   <SelectContent>
                     <SelectItem value="1:1">1:1</SelectItem>
                     <SelectItem value="16:9">16:9</SelectItem>
-                    <SelectItem value="21:9">21:9</SelectItem>
-                    <SelectItem value="3:2">3:2</SelectItem>
-                    <SelectItem value="2:3">2:3</SelectItem>
-                    <SelectItem value="4:5">4:5</SelectItem>
-                    <SelectItem value="5:4">5:4</SelectItem>
-                    <SelectItem value="3:4">3:4</SelectItem>
-                    <SelectItem value="4:3">4:3</SelectItem>
                     <SelectItem value="9:16">9:16</SelectItem>
-                    <SelectItem value="9:21">9:21</SelectItem>
-                    <SelectItem value="custom">Custom</SelectItem>
+                    <SelectItem value="4:3">4:3</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="output_format" 
-                  label="Format" 
-                  tooltip="Format of the output images" 
+                <LabelWithTooltip
+                  id="output_format"
+                  label="Format"
+                  tooltip="Format of the output images"
                 />
                 <Select value={outputFormat} onValueChange={setOutputFormat}>
                   <SelectTrigger id="output_format">
@@ -585,35 +622,35 @@ export default function Home() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="width" 
-                  label="Width" 
-                  tooltip="Width of generated image. Only works if `aspect_ratio` is set to custom. Will be rounded to nearest multiple of 16. Incompatible with fast generation" 
+                <LabelWithTooltip
+                  id="width"
+                  label="Width"
+                  tooltip="Width of generated image. Only works if `aspect_ratio` is set to custom. Will be rounded to nearest multiple of 16. Incompatible with fast generation"
                 />
-                <Input 
-                  id="width" 
-                  type="number" 
-                  placeholder="1024" 
-                  min={256} 
-                  max={1440} 
-                  step={16} 
+                <Input
+                  id="width"
+                  type="number"
+                  placeholder="1024"
+                  min={256}
+                  max={1440}
+                  step={16}
                   value={width}
                   onChange={(e) => setWidth(parseInt(e.target.value) || 1024)}
                 />
               </div>
               <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="height" 
-                  label="Height" 
-                  tooltip="Height of generated image. Only works if `aspect_ratio` is set to custom. Will be rounded to nearest multiple of 16. Incompatible with fast generation" 
+                <LabelWithTooltip
+                  id="height"
+                  label="Height"
+                  tooltip="Height of generated image. Only works if `aspect_ratio` is set to custom. Will be rounded to nearest multiple of 16. Incompatible with fast generation"
                 />
-                <Input 
-                  id="height" 
-                  type="number" 
-                  placeholder="1024" 
-                  min={256} 
-                  max={1440} 
-                  step={16} 
+                <Input
+                  id="height"
+                  type="number"
+                  placeholder="1024"
+                  min={256}
+                  max={1440}
+                  step={16}
                   value={height}
                   onChange={(e) => setHeight(parseInt(e.target.value) || 1024)}
                 />
@@ -621,10 +658,10 @@ export default function Home() {
             </div>
 
             <div className="space-y-2">
-              <LabelWithTooltip 
-                id="megapixels" 
-                label="Megapixels" 
-                tooltip="Approximate number of megapixels for generated image" 
+              <LabelWithTooltip
+                id="megapixels"
+                label="Megapixels"
+                tooltip="Approximate number of megapixels for generated image"
               />
               <Select value={megapixels} onValueChange={setMegapixels}>
                 <SelectTrigger id="megapixels">
@@ -638,200 +675,27 @@ export default function Home() {
             </div>
 
             <div className="space-y-2">
-              <LabelWithTooltip 
+              <LabelWithTooltip
                 label={`Output Quality (${outputQuality})`}
-                tooltip="Quality when saving the output images, from 0 to 100. 100 is best quality, 0 is lowest quality. Not relevant for .png outputs" 
+                tooltip="Quality when saving the output images, from 0 to 100. 100 is best quality, 0 is lowest quality. Not relevant for .png outputs"
               />
-              <Slider 
-                value={[outputQuality]} 
-                onValueChange={(vals: number[]) => setOutputQuality(vals[0])} 
-                max={100} 
-                step={1} 
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="justify-center pb-6">
-            <p className="text-xs font-bold text-center text-muted-foreground">DO NOT TOUCH SETTINGS UNLESS YOU KNOW WHAT YOU ARE DOING</p>
-          </CardFooter>
-        </Card>
-
-        {/* Card 3: Advanced Generation */}
-        <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
-          <CardHeader>
-            <CardTitle>Advanced Generation</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 flex-1">
-            <div className="space-y-2">
-              <LabelWithTooltip  
-                label={`Guidance Scale (${guidanceScale})`}
-                tooltip="Guidance scale for the diffusion process. Lower values can give more realistic images. Good values to try are 2, 2.5, 3 and 3.5. Ignored for Schnell model." 
-              />
-              <Slider 
-                value={[guidanceScale]} 
-                onValueChange={(vals: number[]) => setGuidanceScale(vals[0])} 
-                max={10} 
-                step={0.1} 
-                disabled={model === "schnell"}
-                className={model === "schnell" ? "opacity-50 cursor-not-allowed" : ""}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <LabelWithTooltip 
-                label={`Inference Steps (${numInferenceSteps})`}
-                tooltip="Number of denoising steps. More steps can give more detailed images, but take longer." 
-              />
-              <Slider 
-                value={[numInferenceSteps]} 
-                onValueChange={(vals: number[]) => setNumInferenceSteps(vals[0])} 
-                max={model === "schnell" ? 4 : 50} 
-                step={1} 
-              />
-            </div>
-
-            <div className="space-y-2">
-              <LabelWithTooltip 
-                id="seed" 
-                label="Seed" 
-                tooltip="Random seed. Set for reproducible generation" 
-              />
-              <Input 
-                id="seed" 
-                type="number" 
-                placeholder="Random" 
-                value={seed || ""}
-                onChange={(e) => setSeed(e.target.value ? parseInt(e.target.value) : undefined)}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <LabelWithTooltip 
-                id="go_fast" 
-                label="Go Fast Mode" 
-                tooltip="Run faster predictions with model optimized for speed (currently fp8 quantized); disable to run in original bf16" 
-              />
-              <Switch 
-                id="go_fast" 
-                checked={goFast}
-                onCheckedChange={setGoFast}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <LabelWithTooltip 
-                id="disable_safety" 
-                label="Disable Safety Checker" 
-                tooltip="Disable safety checker for generated images." 
-              />
-              <Switch 
-                id="disable_safety" 
-                checked={disableSafetyChecker}
-                onCheckedChange={setDisableSafetyChecker}
-              />
-            </div>
-
-            <Separator className="my-2" />
-            
-            <div className="space-y-2">
-              <LabelWithTooltip 
-                id="extra_lora" 
-                label="Extra LoRA" 
-                tooltip="Load LoRA weights. Supports Replicate models in the format <owner>/<username> or <owner>/<username>/<version>, HuggingFace URLs in the format huggingface.co/<owner>/<model-name>, CivitAI URLs in the format civitai.com/models/<id>[/<model-name>], or arbitrary .safetensors URLs from the Internet. For example, 'fofr/flux-pixar-cars'" 
-              />
-              <Input 
-                id="extra_lora" 
-                placeholder="owner/model" 
-                value={extraLora}
-                onChange={(e) => setExtraLora(e.target.value)}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  label={`LoRA Scale (${loraScale})`}
-                  tooltip="Determines how strongly the main LoRA should be applied. Sane results between 0 and 1 for base inference. For go_fast we apply a 1.5x multiplier to this value; we've generally seen good performance when scaling the base value by that amount. You may still need to experiment to find the best value for your particular lora." 
-                />
-                <Slider 
-                  value={[loraScale]} 
-                  onValueChange={(vals: number[]) => setLoraScale(vals[0])} 
-                  min={-1} 
-                  max={3} 
-                  step={0.1} 
-                />
-              </div>
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  label={`Extra LoRA Scale (${extraLoraScale})`}
-                  tooltip="Determines how strongly the extra LoRA should be applied." 
-                />
-                <Slider 
-                  value={[extraLoraScale]} 
-                  onValueChange={(vals: number[]) => setExtraLoraScale(vals[0])} 
-                  min={-1} 
-                  max={3} 
-                  step={0.1} 
-                />
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="justify-center pb-6">
-            <p className="text-xs font-bold text-center text-muted-foreground">DO NOT TOUCH SETTINGS UNLESS YOU KNOW WHAT YOU ARE DOING</p>
-          </CardFooter>
-        </Card>
-
-        {/* Card 4: Image Uploads */}
-        <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
-          <CardHeader>
-            <CardTitle>Image Uploads</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 flex-1">
-            <ImageUploadInput 
-              id="image_url"  
-              label="Image (Img2Img)" 
-              tooltip="Input image for image to image or inpainting mode. If provided, aspect_ratio, width, and height inputs are ignored." 
-              value={image}
-              onChange={(val, name) => {
-                setImage(val)
-                if (name) setImageFileName(name)
-              }}
-            />
-
-            <ImageUploadInput 
-              id="mask_url" 
-              label="Mask (Inpainting)" 
-              tooltip="Image mask for image inpainting mode. If provided, aspect_ratio, width, and height inputs are ignored." 
-              value={mask}
-              onChange={(val, name) => {
-                setMask(val)
-                if (name) setMaskFileName(name)
-              }}
-            />
-
-            <div className="space-y-2">
-              <LabelWithTooltip 
-                label={`Prompt Strength (${promptStrength})`}
-                tooltip="Prompt strength when using img2img. 1.0 corresponds to full destruction of information in image" 
-              />
-              <Slider 
-                value={[promptStrength]} 
-                onValueChange={(vals: number[]) => setPromptStrength(vals[0])} 
-                max={1} 
-                step={0.05} 
+              <Slider
+                value={[outputQuality]}
+                onValueChange={(vals: number[]) => setOutputQuality(vals[0])}
+                max={100}
+                step={1}
               />
             </div>
           </CardContent>
-          <CardFooter className="justify-center pb-6">
-            <p className="text-xs font-bold text-center text-muted-foreground">DO NOT TOUCH SETTINGS UNLESS YOU KNOW WHAT YOU ARE DOING</p>
-          </CardFooter>
         </Card>
+
       </div>
 
       <div className="flex justify-center">
         <Button 
           size="lg" 
           className={cn(
-            "w-full max-w-md text-2xl py-6 h-auto shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] transition-transform active:scale-95",
+            "w-full max-w-sm text-lg py-4 h-auto shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] transition-transform active:scale-95",
             isLoading && "opacity-50 cursor-not-allowed active:scale-100"
           )}
           onClick={handleGenerate}
@@ -852,65 +716,6 @@ export default function Home() {
         </Button>
       </div>
 
-      <Separator />
-      
-      <div className="flex flex-col items-center pb-12">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center space-y-4 py-12">
-            <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
-            <p className="text-muted-foreground">Creating your masterpiece...</p>
-          </div>
-        ) : (
-          <>
-            {generatedImages.length > 1 && (
-              <Button onClick={handleDownloadAll} variant="secondary" className="mb-8">
-                <Download className="mr-2 h-4 w-4" />
-                Download All ({generatedImages.length})
-              </Button>
-            )}
-            <div className="flex flex-wrap justify-center items-center gap-8">
-              {generatedImages.map((src, i) => (
-                <div key={i} className="flex flex-col gap-2">
-                  <div 
-                    className="relative rounded-lg flex items-center justify-center w-full max-w-md shadow-sm cursor-pointer transition-colors"
-                    style={getAspectRatioStyle(aspectRatio)}
-                    onClick={() => {
-                      setLightboxIndex(i)
-                      setLightboxOpen(true)
-                    }}
-                  >
-                    <img 
-                      src={src} 
-                      alt={`Generated image ${i + 1}`} 
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                  </div>
-                  <div className="flex gap-2 w-full max-w-md">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => handleDownload(src, i)}
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Download
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => handleShare(src, i)}
-                    >
-                      <Share2 className="mr-2 h-4 w-4" />
-                      Share
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
 
       <Lightbox
         open={lightboxOpen}
